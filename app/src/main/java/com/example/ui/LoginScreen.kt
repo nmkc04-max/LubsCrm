@@ -2,9 +2,11 @@ package com.example.ui
 
 import android.widget.Toast
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -69,18 +71,20 @@ fun LoginScreen(viewModel: CRMViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Asianstar Brand Emblem
-            Box(
+            Card(
                 modifier = Modifier
-                    .size(88.dp)
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
+                    .size(110.dp)
+                    .testTag("asianstar_official_logo_card"),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
             ) {
-                Icon(
-                    imageVector = Icons.Default.ElectricBolt,
-                    contentDescription = "Asianstar Logo Emblem",
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(52.dp)
+                Image(
+                    painter = painterResource(id = com.example.R.drawable.asianstar_official_logo_1781502606049),
+                    contentDescription = "Official Asianstar Logo",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(6.dp)
                 )
             }
 
