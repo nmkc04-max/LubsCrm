@@ -826,7 +826,348 @@ fun MarketplaceTab(
         ) {
             OffersCompactBanner()
         }
-        
+
+        // --- NEW: SMART VEHICLE LUBRICANT FINDER & DEDICATED "BUY AGAIN" SECTION ---
+        // State variables for Vehicle Product Finder
+        var vehicleFinderOpen by remember { mutableStateOf(false) }
+        var selectedVehicleType by remember { mutableStateOf<String?>(null) }
+        var selectedBrand by remember { mutableStateOf<String?>(null) }
+        var selectedModel by remember { mutableStateOf<String?>(null) }
+
+        val vehicleTypes = listOf("Bike 🏍️", "Scooter 🛵", "Car 🚗", "Commercial 🚛")
+        val brandsMap = mapOf(
+            "Bike 🏍️" to listOf("Honda", "Hero", "Bajaj", "TVS"),
+            "Scooter 🛵" to listOf("Honda", "TVS", "Suzuki"),
+            "Car 🚗" to listOf("Maruti Suzuki", "Hyundai", "Tata"),
+            "Commercial 🚛" to listOf("Tata", "Mahindra", "Ashok Leyland")
+        )
+        val modelsMap = mapOf(
+            "Bike 🏍️-Honda" to listOf("CB Shine", "Unicorn"),
+            "Bike 🏍️-Hero" to listOf("Splendor+", "Passion Pro"),
+            "Bike 🏍️-Bajaj" to listOf("Pulsar 150", "Platina 110"),
+            "Bike 🏍️-TVS" to listOf("Apache RTR", "Raider 125"),
+            "Scooter 🛵-Honda" to listOf("Activa 6G", "Dio"),
+            "Scooter 🛵-TVS" to listOf("Jupiter", "Ntorq 125"),
+            "Scooter 🛵-Suzuki" to listOf("Access 125", "Burgman Street"),
+            "Car 🚗-Maruti Suzuki" to listOf("Swift", "Baleno", "Alto K10"),
+            "Car 🚗-Hyundai" to listOf("i20 Premium", "Creta SUV"),
+            "Car 🚗-Tata" to listOf("Nexon EV", "Altroz"),
+            "Commercial 🚛-Tata" to listOf("Ace Chota Hathi", "Ultra Truck"),
+            "Commercial 🚛-Mahindra" to listOf("Bolero Pik-up", "Jeeto"),
+            "Commercial 🚛-Ashok Leyland" to listOf("Dost+", "Bada Dost")
+        )
+
+        // Helper to find recommended lubricants
+        val recommendedProducts = remember(selectedVehicleType, selectedModel) {
+            if (selectedVehicleType != null && selectedModel != null) {
+                val list = mutableListOf<LubricantProduct>()
+                when (selectedVehicleType) {
+                    "Bike 🏍️" -> {
+                        list.add(LubricantProduct(id = 2001, name = "RideForce 4T Synth Sport 10W-30", category = "2-Wheeler Oil", packSize = "1L Can", availableStock = 450, soldStock = 1800, unitPrice = 345.00))
+                        list.add(LubricantProduct(id = 1002, name = "ProShield Oil Filter HF-90", category = "Filters", packSize = "1 Unit", availableStock = 320, soldStock = 90, unitPrice = 195.00))
+                    }
+                    "Scooter 🛵" -> {
+                        list.add(LubricantProduct(id = 2002, name = "Scooter Super-Zip 4T 10W-40", category = "2-Wheeler Oil", packSize = "800mL Bottle", availableStock = 520, soldStock = 2200, unitPrice = 295.00))
+                        list.add(LubricantProduct(id = 1001, name = "UltraFlow Premium Engine Filter", category = "Filters", packSize = "1 Unit", availableStock = 450, soldStock = 120, unitPrice = 280.00))
+                    }
+                    "Car 🚗" -> {
+                        list.add(LubricantProduct(id = 2003, name = "EcoDrive Full Synth 5W-30 Premium", category = "4-Wheeler Oil", packSize = "4L Gallon", availableStock = 180, soldStock = 920, unitPrice = 1650.0) )
+                        list.add(LubricantProduct(id = 2004, name = "UltraCool Concentrate Pink Coolant", category = "Coolants", packSize = "3L Can", availableStock = 210, soldStock = 830, unitPrice = 450.0))
+                        list.add(LubricantProduct(id = 1002, name = "ProShield Oil Filter HF-90", category = "Filters", packSize = "1 Unit", availableStock = 320, soldStock = 90, unitPrice = 195.0))
+                    }
+                    "Commercial 🚛" -> {
+                        list.add(LubricantProduct(id = 2005, name = "Cruiser Supreme Multi-Grade 15W-40", category = "4-Wheeler Oil", packSize = "1L Pack", availableStock = 320, soldStock = 1400, unitPrice = 390.0))
+                        list.add(LubricantProduct(id = 2006, name = "FrigidShield Extreme Green Coolant", category = "Coolants", packSize = "1L Bottle", availableStock = 380, soldStock = 1550, unitPrice = 175.0))
+                        list.add(LubricantProduct(id = 1001, name = "UltraFlow Premium Engine Filter", category = "Filters", packSize = "1 Unit", availableStock = 450, soldStock = 120, unitPrice = 280.0))
+                    }
+                }
+                list
+            } else emptyList()
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Smart Vehicle Product Finder Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, Color(0xFF6C47FF).copy(alpha = 0.2f))
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { vehicleFinderOpen = !vehicleFinderOpen },
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.DirectionsCar, contentDescription = "Car Finder", tint = Color(0xFF6C47FF), modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Smart Vehicle Lubricant Finder", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF6C47FF))
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            if (selectedModel != null) {
+                                Text(selectedModel!!, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.Gray, modifier = Modifier.padding(end = 6.dp))
+                            }
+                            Icon(if (vehicleFinderOpen) Icons.Default.ExpandLess else Icons.Default.ExpandMore, contentDescription = "Toggle", tint = Color(0xFF6C47FF), modifier = Modifier.size(16.dp))
+                        }
+                    }
+
+                    if (vehicleFinderOpen) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Recommended fluids by vehicle specifications instead of grade terms.", fontSize = 10.sp, color = Color.Gray)
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Step 1: Vehicle Type Selector
+                        Text("Select Vehicle Type:", fontWeight = FontWeight.Bold, fontSize = 9.sp, color = Color.Gray)
+                        Row(
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            vehicleTypes.forEach { type ->
+                                val isActive = selectedVehicleType == type
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(if (isActive) Color(0xFFECEBFF) else Color(0xFFF3F4F6))
+                                        .clickable { 
+                                            selectedVehicleType = type
+                                            selectedBrand = null
+                                            selectedModel = null
+                                        }
+                                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                                ) {
+                                    Text(type, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isActive) Color(0xFF6C47FF) else Color.DarkGray)
+                                }
+                            }
+                        }
+
+                        // Step 2: Brand Selector
+                        if (selectedVehicleType != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Select Brand:", fontWeight = FontWeight.Bold, fontSize = 9.sp, color = Color.Gray)
+                            Row(
+                                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                brandsMap[selectedVehicleType!!]?.forEach { brand ->
+                                    val isActive = selectedBrand == brand
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isActive) Color(0xFFECEBFF) else Color(0xFFF3F4F6))
+                                            .clickable { 
+                                                selectedBrand = brand
+                                                selectedModel = null
+                                            }
+                                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(brand, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isActive) Color(0xFF6C47FF) else Color.DarkGray)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Step 3: Model Selector
+                        if (selectedBrand != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Select Model:", fontWeight = FontWeight.Bold, fontSize = 9.sp, color = Color.Gray)
+                            Row(
+                                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                val key = "${selectedVehicleType!!}-${selectedBrand!!}"
+                                modelsMap[key]?.forEach { model ->
+                                    val isActive = selectedModel == model
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .background(if (isActive) Color(0xFFECEBFF) else Color(0xFFF3F4F6))
+                                            .clickable { 
+                                                selectedModel = model
+                                                // Automatically populate search query with the recommended model name to let them find products instantly
+                                                onSearchQueryChange(model)
+                                            }
+                                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    ) {
+                                        Text(model, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (isActive) Color(0xFF6C47FF) else Color.DarkGray)
+                                    }
+                                }
+                            }
+                        }
+
+                        // Recommendations Block
+                        if (selectedModel != null && recommendedProducts.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Divider(color = Color(0xFFF3F4F6))
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Verified, contentDescription = "OEM", tint = Color(0xFF22C55E), modifier = Modifier.size(12.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("OEM Recommended Lubricants for $selectedModel:", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF22C55E))
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            // List recommendations horizontally
+                            Row(
+                                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                recommendedProducts.forEach { prod ->
+                                    Card(
+                                        modifier = Modifier.width(140.dp),
+                                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FAFB)),
+                                        border = BorderStroke(1.dp, Color(0xFFE5E7EB))
+                                    ) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text(prod.name, fontSize = 9.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            Text(prod.category, fontSize = 8.sp, color = Color.Gray)
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween,
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text("₹${prod.unitPrice.toInt()}", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6C47FF))
+                                                Box(
+                                                    modifier = Modifier
+                                                        .clip(CircleShape)
+                                                        .background(Color(0xFF6C47FF))
+                                                        .clickable { 
+                                                            onAddProduct(prod) 
+                                                        }
+                                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                                ) {
+                                                    Text("+ ADD", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // 1-Tap Add Custom Vehicle Bundle Button
+                            Button(
+                                onClick = {
+                                    recommendedProducts.forEach { onAddProduct(it) }
+                                    Toast.makeText(context, "Full OEM Recommendation Bundle added to Procurement Cart! 📦", Toast.LENGTH_LONG).show()
+                                },
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier.fillMaxWidth().height(36.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6C47FF))
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.ShoppingBag, contentDescription = "Add Pack", tint = Color.White, modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Add Dynamic $selectedModel Bundle (₹${recommendedProducts.sumOf { it.unitPrice }.toInt()}) in 1-Tap", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+                            TextButton(
+                                onClick = {
+                                    selectedVehicleType = null
+                                    selectedBrand = null
+                                    selectedModel = null
+                                    onSearchQueryChange("")
+                                },
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                            ) {
+                                Text("Clear Vehicle Filter", fontSize = 9.sp, color = Color.Gray, textDecoration = TextDecoration.Underline)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Buy Again / Express 1-Tap Reorder Panel
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FAFB)),
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(1.dp, Color(0xFFE5E7EB))
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.History, contentDescription = "Reorder", tint = Color(0xFF111827), modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Buy Again / Last Order Reorder", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF111827))
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Last Order Load B2B #AS-99214", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                            Text("Engine Max 4T 10W-30 (25 Packs) - Total ₹137.50", fontSize = 8.sp, color = Color.Gray)
+                        }
+                        
+                        Button(
+                            onClick = {
+                                // Add products representing the last order instantly
+                                val repProd = LubricantProduct(id = 2001, name = "Engine Max 4T 10W-30", category = "2-Wheeler Oil", packSize = "1L Can", availableStock = 450, soldStock = 1800, unitPrice = 5.50)
+                                onAddProduct(repProd)
+                                Toast.makeText(context, "Full Order #AS-99214 added to current cart! ⚡", Toast.LENGTH_SHORT).show()
+                            },
+                            shape = RoundedCornerShape(4.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF111827)),
+                            contentPadding = PaddingValues(horizontal = 8.dp),
+                            modifier = Modifier.height(28.dp)
+                        ) {
+                            Text("1-Tap Reorder", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Divider(color = Color(0xFFE5E7EB))
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text("Monthly Favourites Quick Buy:", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Favourites chips
+                        listOf(
+                            Pair("Scooter Super-Zip 4T", 295.0),
+                            Pair("GearForce EP-90", 275.0),
+                            Pair("Extreme Green Coolant", 175.0)
+                        ).forEach { (favName, price) ->
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color.White)
+                                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(6.dp))
+                                    .clickable {
+                                        val p = LubricantProduct(name = favName, category = "Engine Oils", packSize = "1L", availableStock = 300, soldStock = 1200, unitPrice = price)
+                                        onAddProduct(p)
+                                    }
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(favName, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(Icons.Default.AddCircle, contentDescription = "Add", tint = Color(0xFF6C47FF), modifier = Modifier.size(10.dp))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
 
         // Bottom Section: Vertical Category Rail (Left) + Grid (Right)
@@ -1311,20 +1652,105 @@ fun CartAndOrdersTab(
                         }
                     }
 
-                    // Dispatch progress workflow tracker
+                    // Premium Amazon/Flipkart/Meesho style tracking block
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f))
-                            .padding(8.dp)
+                            .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
+                            .background(Color(0xFFF9FAFB))
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text("B2B Consignment Track:", fontWeight = FontWeight.Bold, fontSize = 9.sp, color = MaterialTheme.colorScheme.primary)
-                        Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                            TimelineTrackingIndicator("Placed", isCompleted = true)
-                            TimelineTrackingIndicator("Gated", isCompleted = true)
-                            TimelineTrackingIndicator("On-Road", isCompleted = order.status != "Order Placed")
-                            TimelineTrackingIndicator("Completed", isCompleted = order.status == "Delivered")
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Amazon-Style Delivery Stepper", fontWeight = FontWeight.Bold, fontSize = 10.sp, color = Color(0xFF111827))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(Color(0xFF6C47FF).copy(0.1f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            ) {
+                                Text("ETA: 4 Hours", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6C47FF))
+                            }
+                        }
+
+                        // Stepper Bar with bullets
+                        val steps = listOf("Booked", "Packed", "Shipped", "Out for Delivery", "Delivered")
+                        val activeStepIndex = when (order.status) {
+                            "Order Placed" -> 0
+                            "Packed" -> 1
+                            "Dispatched", "On-Road" -> 2
+                            "Out for Delivery" -> 3
+                            "Delivered" -> 4
+                            else -> 2 // Default dispatch
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            steps.forEachIndexed { idx, step ->
+                                val isDone = idx <= activeStepIndex
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(10.dp)
+                                            .clip(CircleShape)
+                                            .background(if (isDone) Color(0xFF6C47FF) else Color(0xFFD1D5DB)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        if (isDone) {
+                                            Box(modifier = Modifier.size(4.dp).clip(CircleShape).background(Color.White))
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = step,
+                                        fontSize = 7.sp,
+                                        fontWeight = if (isDone) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isDone) Color(0xFF6C47FF) else Color.Gray,
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                if (idx < steps.size - 1) {
+                                    val isConnectingLineDone = idx < activeStepIndex
+                                    Box(
+                                        modifier = Modifier
+                                            .height(2.dp)
+                                            .weight(0.5f)
+                                            .background(if (isConnectingLineDone) Color(0xFF6C47FF) else Color(0xFFE5E7EB))
+                                    )
+                                }
+                            }
+                        }
+
+                        Divider(color = Color(0xFFE5E7EB))
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Person, contentDescription = "Rep icon", tint = Color.Gray, modifier = Modifier.size(12.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Delivery Courier: Rahul Sharma (Staff Agent • Verified Hub #1)", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Phone, contentDescription = "Phone icon", tint = Color(0xFF6C47FF), modifier = Modifier.size(12.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Call Agent: +91 98877 66554 • Secured OTP: AS-OTP-992", fontSize = 9.sp, color = Color(0xFF6C47FF), fontWeight = FontWeight.Bold)
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.VerifiedUser, contentDescription = "Proof icon", tint = Color(0xFF22C55E), modifier = Modifier.size(12.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Proof: GPS destination lock active & signature stamp enabled in ERP logs.", fontSize = 9.sp, color = Color(0xFF22C55E))
+                            }
                         }
                     }
                 }

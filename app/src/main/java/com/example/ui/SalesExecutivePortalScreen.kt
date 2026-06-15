@@ -60,6 +60,7 @@ fun SalesExecutivePortalScreen(
     var visitTypeSelected by remember { mutableStateOf("Routine Checkup") }
     var responseStatusSelected by remember { mutableStateOf("Ready to Buy") }
     var closingRequirementText by remember { mutableStateOf("") }
+    var showVoiceModeDialog by remember { mutableStateOf(false) }
 
     // Expense claims states
     var expenseTypeSelected by remember { mutableStateOf("Fuel / Petrol") }
@@ -121,6 +122,118 @@ fun SalesExecutivePortalScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
+                    // --- HIGH-DENSITY ENTERPRISE SALES EXECUTIVE KPI DASHBOARD ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Dashboard, contentDescription = "KPIs", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Your Live Sales KPIs & Territory Status", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Today's Target vs Achievement
+                                Card(
+                                    modifier = Modifier.weight(1f),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFF3F4F6))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Today's Target", fontSize = 8.sp, color = Color.Gray)
+                                        Text("₹25,000", fontWeight = FontWeight.Black, fontSize = 12.sp, color = Color(0xFF111827))
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("65% Accomplished", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF22C55E))
+                                    }
+                                }
+
+                                // Orders Booked count
+                                Card(
+                                    modifier = Modifier.weight(1f),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFF3F4F6))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Today's Bookings", fontSize = 8.sp, color = Color.Gray)
+                                        Text("${visits.count { it.wasOrderPlaced }} Orders", fontWeight = FontWeight.Black, fontSize = 12.sp, color = Color(0xFF6C47FF))
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("Val: ₹${String.format(Locale.US, "%,.0f", visits.filter { it.wasOrderPlaced }.sumOf { it.orderQuantity * 320.0 })}", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6C47FF))
+                                    }
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                              ) {
+                                // Distance Covered
+                                Card(
+                                    modifier = Modifier.weight(1f),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFF3F4F6))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Distance Covered", fontSize = 8.sp, color = Color.Gray)
+                                        Text("${String.format(Locale.US, "%.1f", currentKm)} KM", fontWeight = FontWeight.Black, fontSize = 12.sp, color = Color.DarkGray)
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("Auto GPS tracking", fontSize = 8.sp, color = Color.Gray)
+                                    }
+                                }
+
+                                // Pending Visits
+                                Card(
+                                    modifier = Modifier.weight(1f),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFF3F4F6))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Pending Tasks", fontSize = 8.sp, color = Color.Gray)
+                                        Text("${(5 - visits.size).coerceAtLeast(0)} visits", fontWeight = FontWeight.Black, fontSize = 12.sp, color = Color(0xFFEF4444))
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text("Quota: 5 per Day", fontSize = 8.sp, color = Color.Gray)
+                                    }
+                                }
+                            }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Nearest Customer
+                                Card(
+                                    modifier = Modifier.weight(1.2f),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFF3F4F6))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Nearest Store (GPS)", fontSize = 8.sp, color = Color.Gray)
+                                        Text(customers.firstOrNull()?.name ?: "Golden Wheels", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color.DarkGray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text("1.8 KM away • 4 min", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFF6C47FF))
+                                    }
+                                }
+
+                                // Next Recommended Visit
+                                Card(
+                                    modifier = Modifier.weight(1.1f),
+                                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                                    border = BorderStroke(1.dp, Color(0xFFF3F4F6))
+                                ) {
+                                    Column(modifier = Modifier.padding(8.dp)) {
+                                        Text("Recommended Target", fontSize = 8.sp, color = Color.Gray)
+                                        Text(customers.lastOrNull()?.name ?: "Apex Spares", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color.DarkGray, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text("Inactive: 10 Days", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Color(0xFFEF4444))
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // Start/End Shift Panel with animation
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -367,6 +480,33 @@ fun SalesExecutivePortalScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text("Log Customer Field Audit & Visit Checks", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+
+                    // --- NEW: SMART AI VOICE MODE ENTRY CARD ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.15f)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+                    ) {
+                        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Default.Mic, contentDescription = "mic", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column {
+                                    Text("Smart AI Voice Mode Entry", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                                    Text("Speak visit notes to auto-fill CRM ledger fields instantly.", fontSize = 9.sp, color = Color.Gray)
+                                }
+                            }
+                            Button(
+                                onClick = { showVoiceModeDialog = true },
+                                shape = RoundedCornerShape(6.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                                modifier = Modifier.height(30.dp)
+                            ) {
+                                Text("🎤 Speak", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            }
+                        }
+                    }
 
                     // Form Fields
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -624,6 +764,95 @@ fun SalesExecutivePortalScreen(
                     }
                 }
             }
+        }
+        if (showVoiceModeDialog) {
+            AlertDialog(
+                onDismissRequest = { showVoiceModeDialog = false },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Mic, contentDescription = "mic", tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Voice Mode Assistant", fontWeight = FontWeight.Black)
+                    }
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text("Simulating voice reception and NLP auto-parsing. Tap on any sample transcript to simulate real-time speech entry:", fontSize = 11.sp, color = Color.Gray)
+                        
+                        // Simulation templates
+                        listOf(
+                            Triple(
+                                "Visits Apex Spares, pitched Motor Oil, booked 50 packs.",
+                                "Visits Apex Lubricants & Spares. They are ready to buy 50 packs of RideForce 4T Synth Sport 10W-30. Spoke to Arvinder about restocking. Banners printed.",
+                                "Apex Spares"
+                            ),
+                            Triple(
+                                "Routine checkup at Golden Wheels, negotiating batteries.",
+                                "Visited Golden Wheels Service Station. Routine audit checkup completed. Sanjay reported high bearing heat on trials. Interested in batteries, negotiating prices.",
+                                "Golden Wheels Service Station"
+                            )
+                        ).forEach { (caption, fullText, clientName) ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        selectedCustomerForVisit = clientName
+                                        if (caption.contains("Apex")) {
+                                            visitTypeSelected = "Order Booking"
+                                            visitOrderPlacedChecked = true
+                                            interestedProductText = "RideForce 4T Synth Sport"
+                                            orderQtyInput = "50"
+                                            responseStatusSelected = "Ready to Buy"
+                                            visitNotesText = "Spoke to Arvinder about seasonal supply restocking. Banners printed."
+                                            closingRequirementText = "Banners with shop logo printed."
+                                        } else {
+                                            visitTypeSelected = "Routine Checkup"
+                                            visitOrderPlacedChecked = false
+                                            interestedProductText = ""
+                                            orderQtyInput = ""
+                                            responseStatusSelected = "Negotiating"
+                                            visitNotesText = "Sanjay reported high bearing heating trials of Multi-purpose Lithium grease. Interested in batteries, negotiating on bulk unit rates."
+                                            closingRequirementText = "Provide bulk pricing quote."
+                                        }
+                                        showVoiceModeDialog = false
+                                        Toast.makeText(context, "AI recognized speech from input! Form populated. ✅", Toast.LENGTH_LONG).show()
+                                    },
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
+                            ) {
+                                Column(modifier = Modifier.padding(10.dp)) {
+                                    Text(caption, fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text("\"$fullText\"", fontSize = 9.sp, color = Color.DarkGray)
+                                }
+                            }
+                        }
+
+                        // Passive audio pulse animation simulation
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                                .padding(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Listening... (Tap option to simulate)", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { showVoiceModeDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }

@@ -13,6 +13,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -34,6 +36,36 @@ import androidx.compose.ui.unit.sp
 import com.example.data.VisitLog
 import com.example.data.WorkerDayTrack
 
+data class CustomerTimelineItem(
+    val title: String,
+    val summary: String,
+    val time: String,
+    val color: Color
+)
+
+fun timelineItemsForCustomer(customer: String): List<CustomerTimelineItem> {
+    return if (customer.contains("Apex")) {
+        listOf(
+            CustomerTimelineItem("B2B Consignment Dispatch", "Load #LOAD-922 shipped: 50 packs RideForce 4T, value ₹16,250", "Today, 11:30 AM", Color(0xFF6C47FF)),
+            CustomerTimelineItem("Geotagged CRM Visit log check", "Completed by Vikram (Rep), outcome marked Ready-to-Buy. Follow-up: print branding boards.", "Yesterday, 3:15 PM", Color(0xFF22C55E)),
+            CustomerTimelineItem("Credit Invoice Settled", "Paid ₹14,000 against June backlog. Outstanding reduced to ₹2,800 only.", "3 Days ago", Color(0xFFF59E0B)),
+            CustomerTimelineItem("Support ticket #CS-991 closed", "Inquired about loyalty point redemption on Platinum. Answered & updated on portal.", "5 Days ago", Color.Gray)
+        )
+    } else if (customer.contains("Golden")) {
+        listOf(
+            CustomerTimelineItem("Visits Routine Audit Completed", "Completed routine audit checkup. Outlined trial bearing grease feedback. Negotiating lead acid battery list rates.", "Yesterday, 5:40 PM", Color(0xFF22C55E)),
+            CustomerTimelineItem("Payment Handshake collection", "Collected ₹9,500 post delivery verify. Secured OTP key matched.", "2 Days ago", Color(0xFF22C55E)),
+            CustomerTimelineItem("Credit Approved for Platform terms", "Owner granted Platinum grade credit terms extension (Limit: ₹1,50,000).", "4 Days ago", Color(0xFF6C47FF)),
+            CustomerTimelineItem("Dispatch Gated At Depot", "Load #LOAD-882 exited Vijayawada checkout safely.", "6 Days ago", Color.Gray)
+        )
+    } else {
+        listOf(
+            CustomerTimelineItem("General Catalog Discovery query", "Searched complete industrial coolants catalog and marked 5 additive fluids favorite.", "Yesterday, 10:15 AM", Color(0xFF6C47FF)),
+            CustomerTimelineItem("New Retail Account Created", "Automated system verified GSTIN credentials. Shifted target tier status to Bronze.", "10 Days ago", Color(0xFF22C55E))
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OwnerDashboardScreen(
@@ -51,6 +83,7 @@ fun OwnerDashboardScreen(
 
     // Owner Sub-portal Navigation
     var ownerSubTab by remember { mutableIntStateOf(0) } // 0=Team Telemetry, 1=Multi-Warehouse Matrix, 2=Workflows & Approvals, 3=Campaign Rule Engine
+    var selected360Customer by remember { mutableStateOf("Apex Spares") }
 
     // Simulated Warehouse Stock Matrix
     var hydStock by remember { mutableIntStateOf(1420) }
@@ -172,14 +205,15 @@ fun OwnerDashboardScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Tab(selected = ownerSubTab == 0, onClick = { ownerSubTab = 0 }) {
-                        Text("Live Telemetry", modifier = Modifier.padding(14.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Enterprise BI Hub", modifier = Modifier.padding(14.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                     Tab(selected = ownerSubTab == 1, onClick = { ownerSubTab = 1 }) {
-                        Text("Warehouse Matrix", modifier = Modifier.padding(14.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                        Text("Field Tracking", modifier = Modifier.padding(14.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
-                    Tab(selected = ownerSubTab == 2, onClick = { 
-                        ownerSubTab = 2 
-                    }) {
+                    Tab(selected = ownerSubTab == 2, onClick = { ownerSubTab = 2 }) {
+                        Text("Inventory Intel", modifier = Modifier.padding(14.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    }
+                    Tab(selected = ownerSubTab == 3, onClick = { ownerSubTab = 3 }) {
                         BadgedBox(
                             badge = {
                                 if (pendingApprovals.isNotEmpty()) {
@@ -188,11 +222,11 @@ fun OwnerDashboardScreen(
                             },
                             modifier = Modifier.padding(vertical = 14.dp)
                         ) {
-                            Text("Approvals", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            Text("Workflows", fontWeight = FontWeight.Bold, fontSize = 12.sp)
                         }
                     }
-                    Tab(selected = ownerSubTab == 3, onClick = { ownerSubTab = 3 }) {
-                        Text("Campaign Manager", modifier = Modifier.padding(14.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                    Tab(selected = ownerSubTab == 4, onClick = { ownerSubTab = 4 }) {
+                        Text("Campaign Rule Engine", modifier = Modifier.padding(14.dp), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                     }
                 }
             }
@@ -204,7 +238,236 @@ fun OwnerDashboardScreen(
                 .padding(innerPadding)
         ) {
             when (ownerSubTab) {
-                0 -> LazyColumn(
+                0 -> Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // --- REVENUE & PORTFOLIO BI INTELLIGENCE SEGMENT ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.12f)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.25f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Analytics, contentDescription = "BI Icon", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("Enterprise BI Executive Summary Dashboard", fontWeight = FontWeight.Black, fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                            }
+                            
+                            // 2x3 high-density grid for metrics
+                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text("Today's Revenue", fontSize = 8.sp, color = Color.Gray)
+                                            Text("₹42,500", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF111827))
+                                        }
+                                    }
+                                    Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text("Monthly Revenue", fontSize = 8.sp, color = Color.Gray)
+                                            Text("₹4,85,000", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF6C47FF))
+                                        }
+                                    }
+                                    Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text("Active Orders", fontSize = 8.sp, color = Color.Gray)
+                                            Text("14 Booked", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF22C55E))
+                                        }
+                                    }
+                                }
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text("Active Dealers", fontSize = 8.sp, color = Color.Gray)
+                                            Text("156 Outlets", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.DarkGray)
+                                        }
+                                    }
+                                    Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text("Active Field Staff", fontSize = 8.sp, color = Color.Gray)
+                                            Text("4 Online", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color.DarkGray)
+                                        }
+                                    }
+                                    Card(modifier = Modifier.weight(1f), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                                        Column(modifier = Modifier.padding(8.dp)) {
+                                            Text("Depot Alerts", fontSize = 8.sp, color = Color.Gray)
+                                            Text("2 Warning", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFFEF4444))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // --- BUSINESS INTELLIGENCE ANALYTICS CHART BLOCK ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Text("Revenue Forecast & Sales Ledger Trends (Canvas)", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF111827))
+                            
+                            // Modern Mini Graphical Canvas
+                            Canvas(modifier = Modifier.fillMaxWidth().height(100.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                
+                                // Draw Gridlines
+                                drawLine(color = Color(0xFFE2E8F0), start = androidx.compose.ui.geometry.Offset(0f, h*0.25f), end = androidx.compose.ui.geometry.Offset(w, h*0.25f))
+                                drawLine(color = Color(0xFFE2E8F0), start = androidx.compose.ui.geometry.Offset(0f, h*0.5f), end = androidx.compose.ui.geometry.Offset(w, h*0.5f))
+                                drawLine(color = Color(0xFFE2E8F0), start = androidx.compose.ui.geometry.Offset(0f, h*0.75f), end = androidx.compose.ui.geometry.Offset(w, h*0.75f))
+                                
+                                // Draw revenue trend points
+                                val points = listOf(0.1f to "Apr", 0.4f to "May", 0.35f to "Jun", 0.70f to "Jul", 0.65f to "Aug", 0.95f to "Sep")
+                                val n = points.size
+                                val dx = w / (n - 1)
+                                
+                                val path = androidx.compose.ui.graphics.Path()
+                                points.forEachIndexed { idx, (pct, _) ->
+                                    val px = idx * dx
+                                    val py = h - (pct * h * 0.8f + h * 0.1f)
+                                    if (idx == 0) path.moveTo(px, py) else path.lineTo(px, py)
+                                    
+                                    // Highlight point dot
+                                    drawCircle(
+                                        color = Color(0xFF6C47FF),
+                                        radius = 12f,
+                                        center = androidx.compose.ui.geometry.Offset(px, py)
+                                    )
+                                }
+                                drawPath(
+                                    path = path,
+                                    color = Color(0xFF6C47FF),
+                                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f)
+                                )
+                            }
+                            
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                listOf("Apr: 1.2L", "May: 1.8L", "Jun: 1.6L", "Jul: 3.1L", "Aug: 2.8L", "Sep: 4.8L").forEach { label ->
+                                    Text(label, fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                                }
+                            }
+                            
+                            Divider()
+                            
+                            // High density summary cards
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Column {
+                                    Text("TOP PRODUCTS", fontSize = 8.sp, color = Color.Gray)
+                                    Text("• RideForce 4T (62%)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    Text("• Multi Grease (18%)", fontSize = 9.sp, color = Color.Gray)
+                                }
+                                Column {
+                                    Text("TOP TERRITORIES", fontSize = 8.sp, color = Color.Gray)
+                                    Text("• Pune West (₹2.4L)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    Text("• Kanpor East (₹1.8L)", fontSize = 9.sp, color = Color.Gray)
+                                }
+                                Column {
+                                    Text("SALES TEAM RANK", fontSize = 8.sp, color = Color.Gray)
+                                    Text("• Rahul S. (92% quota)", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                    Text("• Amit P. (84% quota)", fontSize = 9.sp, color = Color.Gray)
+                                }
+                            }
+                        }
+                    }
+
+                    // --- 360-DEGREE DIAL-IN CUSTOMER TIMELINE SECTION ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(Icons.Default.RecentActors, contentDescription = "Actor", tint = Color(0xFF6C47FF), modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text("Interactive Customer 360° Timeline", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF111827))
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(6.dp))
+                                        .background(Color(0xFF22C55E).copy(alpha = 0.12f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text("Platinum Tier", fontSize = 8.sp, fontWeight = FontWeight.Bold, color = Color(0xFF22C55E))
+                                }
+                            }
+
+                            // Selection chips
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                listOf("Apex Spares", "Golden Wheels", "Auto Mech Emporium").forEach { customer ->
+                                    val sel = selected360Customer == customer
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(6.dp))
+                                            .background(if (sel) Color(0xFFECEBFF) else Color(0xFFF3F4F6))
+                                            .clickable { selected360Customer = customer }
+                                            .padding(horizontal = 10.dp, vertical = 5.dp)
+                                    ) {
+                                        Text(customer, fontSize = 9.sp, fontWeight = if (sel) FontWeight.Bold else FontWeight.Normal, color = if (sel) Color(0xFF6C47FF) else Color.DarkGray)
+                                    }
+                                }
+                            }
+
+                            Divider(color = Color(0xFFF3F4F6))
+
+                            // Customer Details Block
+                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                Text("Customer Profile: $selected360Customer", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = Color(0xFF111827))
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("Lifetime Purchases: ₹1,48,200", fontSize = 9.sp, color = Color.Gray)
+                                    Text("Credit Status: Approved Max (A+ Grade)", fontSize = 9.sp, color = Color(0xFF22C55E), fontWeight = FontWeight.Bold)
+                                }
+                                Text("Authorized Contacts: Sanjay Kumar • Last Interaction: 2 Hours ago via Vikram (Field Rep)", fontSize = 9.sp, color = Color.Gray)
+                            }
+
+                            Divider(color = Color(0xFFF3F4F6))
+
+                            Text("Ledger Unified History Timeline:", fontWeight = FontWeight.Bold, fontSize = 10.sp, color = Color.DarkGray)
+
+                            // Unified vertical timeline entries
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                timelineItemsForCustomer(selected360Customer).forEach { item ->
+                                    Row(verticalAlignment = Alignment.Top) {
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(8.dp)
+                                                    .clip(CircleShape)
+                                                    .background(item.color)
+                                            )
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(1.5.dp)
+                                                    .height(24.dp)
+                                                    .background(Color(0xFFE2E8F0))
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Column {
+                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                Text(item.title, fontWeight = FontWeight.Bold, fontSize = 10.sp, color = Color(0xFF111827))
+                                                Text(item.time, fontSize = 8.sp, color = Color.Gray)
+                                            }
+                                            Text(item.summary, fontSize = 9.sp, color = Color.DarkGray)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                1 -> LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
@@ -265,7 +528,7 @@ fun OwnerDashboardScreen(
                         }
                     }
                 }
-                1 -> Column(
+                2 -> Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
@@ -296,6 +559,62 @@ fun OwnerDashboardScreen(
                                 Column {
                                     Text("Depot Replenishment Triggered", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.error)
                                     Text("Vijayawada/Visakhapatnam depot inventories are low (threshold < 1,000 packs). Recommend stock transfers from central Hyderabad Depot.", fontSize = 11.sp)
+                                }
+                            }
+                        }
+                    }
+
+                    // --- ENTERPRISE INVENTORY INTELLIGENCE PANEL ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.08f)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Analytics, contentDescription = "Intel", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text("ERP Automated Inventory Intelligence Engine", fontWeight = FontWeight.Bold, fontSize = 11.sp, color = MaterialTheme.colorScheme.primary)
+                            }
+
+                            Divider(color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+
+                            // Dead Stock alert
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(Icons.Default.RemoveCircleOutline, contentDescription = "dead stock", tint = Color(0xFFEF4444), modifier = Modifier.size(14.dp).padding(top = 1.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Column {
+                                    Text("Dead Stock Detection (Unsold > 60 days):", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFFEF4444))
+                                    Text("Coolant Concentrate Pink sitting inactive for 68 days in Vijayawada Depot. Action: Auto-triggered 15% discount bundle in Retailer app.", fontSize = 9.sp, color = Color.DarkGray)
+                                }
+                            }
+
+                            // Fast vs Slow Moving categorization
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(Icons.Default.TrendingUp, contentDescription = "fast moving", tint = Color(0xFF22C55E), modifier = Modifier.size(14.dp).padding(top = 1.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Column {
+                                    Text("Fast-Moving Leader (Turnover: 4.8x/mo):", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFF22C55E))
+                                    Text("RideForce 4T Synth Sport 10W-30 is high velocity. Core recommendation: Maintain minimum safety stock of 500 packs.", fontSize = 9.sp, color = Color.DarkGray)
+                                }
+                            }
+
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(Icons.Default.TrendingDown, contentDescription = "slow moving", tint = Color(0xFFF59E0B), modifier = Modifier.size(14.dp).padding(top = 1.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Column {
+                                    Text("Slow-Moving Leader (Turnover: 0.3x/mo):", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF59E0B))
+                                    Text("Multi-purpose Lithium Bearing Grease. Turnover rates are sluggish. Recommend hold on further production orders.", fontSize = 9.sp, color = Color.DarkGray)
+                                }
+                            }
+
+                            // Replenishment Forecasting
+                            Row(verticalAlignment = Alignment.Top) {
+                                Icon(Icons.Default.Autorenew, contentDescription = "forecast", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(14.dp).padding(top = 1.dp))
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Column {
+                                    Text("Machine Learning Replenishment Forecast (Next 30 Days):", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                                    Text("Predicted customer demand spikes by +24% in Visakhapatnam region due to upcoming regional automobile show. Automated system recommends dispatching extra +450 packs.", fontSize = 9.sp, color = Color.DarkGray)
                                 }
                             }
                         }
@@ -387,7 +706,7 @@ fun OwnerDashboardScreen(
                         }
                     }
                 }
-                2 -> Column(
+                3 -> Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
@@ -455,7 +774,7 @@ fun OwnerDashboardScreen(
                         }
                     }
                 }
-                3 -> Column(
+                4 -> Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp)
