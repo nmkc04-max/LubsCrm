@@ -1,6 +1,6 @@
 {
-  "name": "LubeCRM",
-  "description": "High-fidelity CRM and stock tracker for lubricant manufacturing, letting representatives log mechanic visits and manage sold/available inventory.",
+  "name": "Asianstar Lubricants",
+  "description": "Enterprise-grade B2B lubricant distribution ecosystem combining CRM, sales automation, dealer commerce tiering, credit limits, inventory, QR verification, and real-time route tracking.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

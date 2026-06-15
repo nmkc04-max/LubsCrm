@@ -2,19 +2,15 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Light Theme / Dark Theme Brand Palette - Oils & Lubricants theme
-val OilGold = Color(0xFFF39C12)         // Warm Lubricating Oil Gold
-val SecondaryBronze = Color(0xFFD68910) // Smooth Amber Finish
-val CharcoalMetal = Color(0xFF2C3E50)   // Sleek Industrial Charcoal
-val AlertRed = Color(0xFFE74C3C)        // Engine Warning Accent Red
+// Premium Industrial Enterprise palette
+val PrimaryDeepBlue = Color(0xFF0F3D91)      // Enterprise Deep Blue
+val SecondaryPremiumGold = Color(0xFFD4A017) // Premium Gold Accent
+val LightBackground = Color(0xFFF8F9FA)      // Clean industrial light gray bg
+val PureWhite = Color(0xFFFFFFFF)            // Plain white for cards and panels
+val TextPrimary = Color(0xFF111827)          // Crisp dark text
+val TextSecondary = Color(0xFF4B5563)        // Soft neutral medium text
+val LightGrayBorder = Color(0xFFE5E7EB)      // Subtle clean divider/border
+val SuccessGreen = Color(0xFF22C55E)         // Success state green
+val WarningOrange = Color(0xFFF59E0B)        // Warning state amber
+val AlertRed = Color(0xFFEF4444)             // Error state red
 
-// Dark palette
-val OilGoldDark = Color(0xFFF5B041)
-val AccentAmber = Color(0xFFF4D03F)
-val SlateBackground = Color(0xFF15191C)
-val MediumGraySurface = Color(0xFF212529)
-
-// Light palette
-val LightBackground = Color(0xFFFAFBFD)
-val LightSurface = Color.White
-val LightOilGold = Color(0xFFE67E22)

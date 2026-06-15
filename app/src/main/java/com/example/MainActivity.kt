@@ -49,16 +49,6 @@ fun MainLayout(viewModel: CRMViewModel) {
     if (userRole == null) {
         LoginScreen(viewModel = viewModel)
     } else {
-        var selectedTab by remember { mutableIntStateOf(0) }
-
-        // Observe flows reactively from the DB layer
-        val products by viewModel.products.collectAsStateWithLifecycle()
-        val customers by viewModel.customers.collectAsStateWithLifecycle()
-        val visits by viewModel.visits.collectAsStateWithLifecycle()
-        val submissions by viewModel.submissions.collectAsStateWithLifecycle()
-
-        val unprocessedCount = submissions.count { !it.isProcessed }
-
         Scaffold(
             modifier = Modifier.fillMaxSize(),
             topBar = {
@@ -81,28 +71,43 @@ fun MainLayout(viewModel: CRMViewModel) {
                                     .size(36.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (userRole == "Owner") MaterialTheme.colorScheme.primaryContainer
-                                        else Color(0xFF2ECC71).copy(alpha = 0.15f)
+                                        when (userRole) {
+                                            "Owner" -> MaterialTheme.colorScheme.primaryContainer
+                                            "Customer" -> MaterialTheme.colorScheme.secondaryContainer
+                                            else -> Color(0xFF2ECC71).copy(alpha = 0.15f)
+                                        }
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = if (userRole == "Owner") Icons.Default.AdminPanelSettings else Icons.Default.Person,
+                                    imageVector = when (userRole) {
+                                        "Owner" -> Icons.Default.AdminPanelSettings
+                                        "Customer" -> Icons.Default.ShoppingCart
+                                        else -> Icons.Default.Person
+                                    },
                                     contentDescription = "User role icon",
-                                    tint = if (userRole == "Owner") MaterialTheme.colorScheme.onPrimaryContainer else Color(0xFF27AE60),
+                                    tint = when (userRole) {
+                                        "Owner" -> MaterialTheme.colorScheme.onPrimaryContainer
+                                        "Customer" -> MaterialTheme.colorScheme.onSecondaryContainer
+                                        else -> Color(0xFF27AE60)
+                                    },
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text(
-                                    text = userDisplayName ?: "Sales Rep",
+                                    text = userDisplayName ?: "Active User",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
-                                    text = if (userRole == "Owner") "Corporate Access (Owner)" else "Sales Executive (Worker)",
+                                    text = when (userRole) {
+                                        "Owner" -> "Corporate Access (Owner)"
+                                        "Customer" -> "Customer Portal"
+                                        else -> "Sales Executive (Worker)"
+                                    },
                                     fontSize = 10.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -138,75 +143,6 @@ fun MainLayout(viewModel: CRMViewModel) {
                     }
                 }
             },
-            bottomBar = {
-                NavigationBar(
-                    modifier = Modifier
-                        .windowInsetsPadding(WindowInsets.navigationBars)
-                        .testTag("bottom_nav_bar")
-                ) {
-                    NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        icon = {
-                            Icon(
-                                imageVector = if (selectedTab == 0) Icons.Default.Dashboard else Icons.Outlined.Dashboard,
-                                contentDescription = "Dashboard"
-                            )
-                        },
-                        label = { Text("Dashboard") },
-                        modifier = Modifier.testTag("tab_dashboard")
-                    )
-
-                    NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        icon = {
-                            Icon(
-                                imageVector = if (selectedTab == 1) Icons.Default.Inventory2 else Icons.Outlined.Inventory2,
-                                contentDescription = "Depot"
-                            )
-                        },
-                        label = { Text("Depot") },
-                        modifier = Modifier.testTag("tab_depot")
-                    )
-
-                    NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { selectedTab = 2 },
-                        icon = {
-                            Icon(
-                                imageVector = if (selectedTab == 2) Icons.Default.PersonSearch else Icons.Outlined.PersonSearch,
-                                contentDescription = "CRM Logs"
-                            )
-                        },
-                        label = { Text("Visits & CRM") },
-                        modifier = Modifier.testTag("tab_visits")
-                    )
-
-                    NavigationBarItem(
-                        selected = selectedTab == 3,
-                        onClick = { selectedTab = 3 },
-                        icon = {
-                            BadgedBox(
-                                badge = {
-                                    if (unprocessedCount > 0) {
-                                        Badge {
-                                            Text("$unprocessedCount")
-                                        }
-                                    }
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = if (selectedTab == 3) Icons.Default.Share else Icons.Outlined.Share,
-                                    contentDescription = "Form share portal"
-                                )
-                            }
-                        },
-                        label = { Text("Form Portal") },
-                        modifier = Modifier.testTag("tab_portal")
-                    )
-                }
-            },
             contentWindowInsets = WindowInsets.safeDrawing
         ) { innerPadding ->
             Box(
@@ -214,38 +150,19 @@ fun MainLayout(viewModel: CRMViewModel) {
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
-                when (selectedTab) {
-                    0 -> {
-                        if (userRole == "Owner") {
-                            OwnerDashboardScreen(
-                                viewModel = viewModel,
-                                onNavigateToTab = { selectedTab = it }
-                            )
-                        } else {
-                            DashboardScreen(
-                                viewModel = viewModel,
-                                products = products,
-                                customers = customers,
-                                visits = visits,
-                                onNavigateToTab = { selectedTab = it }
-                            )
-                        }
+                when (userRole) {
+                    "Customer" -> {
+                        CustomerPortalScreen(viewModel = viewModel)
                     }
-                    1 -> InventoryScreen(
-                        viewModel = viewModel,
-                        products = products
-                    )
-                    2 -> VisitsScreen(
-                        viewModel = viewModel,
-                        customers = customers,
-                        visits = visits,
-                        products = products
-                    )
-                    3 -> FormSharingScreen(
-                        viewModel = viewModel,
-                        submissions = submissions,
-                        products = products
-                    )
+                    "Owner" -> {
+                        OwnerDashboardScreen(
+                            viewModel = viewModel,
+                            onNavigateToTab = { }
+                        )
+                    }
+                    else -> {
+                        SalesExecutivePortalScreen(viewModel = viewModel)
+                    }
                 }
             }
         }

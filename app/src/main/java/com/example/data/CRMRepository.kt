@@ -36,11 +36,26 @@ class CRMRepository(private val crmDao: CRMDao) {
         val currentProducts = crmDao.getAllProducts().first()
         if (currentProducts.isEmpty()) {
             val defaultProducts = listOf(
-                LubricantProduct(name = "Engine Max 4T 10W-30", category = "2-Wheeler Motor Oil", packSize = "1L Bottle", availableStock = 350, soldStock = 1200, unitPrice = 5.50),
-                LubricantProduct(name = "Titan Heavy Diesel 15W-40", category = "Heavy Duty Truck Oil", packSize = "20L Pail", availableStock = 180, soldStock = 640, unitPrice = 68.00),
-                LubricantProduct(name = "Industrial Hydropower 46", category = "Hydraulic Fluid", packSize = "210L Drum", availableStock = 45, soldStock = 120, unitPrice = 480.00),
-                LubricantProduct(name = "GearForce EP-90 Premium", category = "Gear & Transmission Oil", packSize = "5L Can", availableStock = 220, soldStock = 950, unitPrice = 22.50),
-                LubricantProduct(name = "Multi-Purpose Lithium Grease", category = "Industrial Grease", packSize = "1kg Tub", availableStock = 500, soldStock = 1650, unitPrice = 9.20)
+                LubricantProduct(name = "Paraffinic Pure Base Petroleum Oil", category = "Petroleum & Base Oils", packSize = "5L Can", availableStock = 140, soldStock = 420, unitPrice = 650.00),
+                LubricantProduct(name = "Crude Additive Booster Oil", category = "Petroleum & Base Oils", packSize = "1L Bottle", availableStock = 300, soldStock = 890, unitPrice = 199.00),
+                
+                LubricantProduct(name = "RideForce 4T Synth Sport 10W-30", category = "2-Wheeler Oil", packSize = "1L Can", availableStock = 450, soldStock = 1800, unitPrice = 345.00),
+                LubricantProduct(name = "Scooter Super-Zip 4T 10W-40", category = "2-Wheeler Oil", packSize = "800mL Bottle", availableStock = 520, soldStock = 2200, unitPrice = 295.00),
+                
+                LubricantProduct(name = "LubeStar 3T CNG Active Rickshaw", category = "3-Wheeler Oil", packSize = "1L Bottle", availableStock = 240, soldStock = 1100, unitPrice = 310.00),
+                LubricantProduct(name = "TriForce Heavy Duty 3W Engine Oil", category = "3-Wheeler Oil", packSize = "3L Can", availableStock = 150, soldStock = 650, unitPrice = 880.00),
+                
+                LubricantProduct(name = "EcoDrive Full Synth 5W-30 Premium", category = "4-Wheeler Oil", packSize = "4L Gallon", availableStock = 180, soldStock = 920, unitPrice = 1650.00),
+                LubricantProduct(name = "Cruiser Supreme Multi-Grade 15W-40", category = "4-Wheeler Oil", packSize = "1L Pack", availableStock = 320, soldStock = 1400, unitPrice = 390.00),
+                
+                LubricantProduct(name = "FrigidShield Extreme Green Coolant", category = "Coolants", packSize = "1L Bottle", availableStock = 380, soldStock = 1550, unitPrice = 175.00),
+                LubricantProduct(name = "UltraCool Concentrate Pink Coolant", category = "Coolants", packSize = "3L Can", availableStock = 210, soldStock = 830, unitPrice = 450.00),
+                
+                LubricantProduct(name = "VoltFlow Demineralized Battery Water", category = "Battery Water / Fluids", packSize = "5L Bottle", availableStock = 600, soldStock = 3400, unitPrice = 90.00),
+                LubricantProduct(name = "RedAcid Lead-Acid Battery Top-Up", category = "Battery Water / Fluids", packSize = "1L Dispenser", availableStock = 400, soldStock = 1680, unitPrice = 120.00),
+                
+                LubricantProduct(name = "GearForce EP-90 Hypoid Lube", category = "Gear & Transmission", packSize = "1L Can", availableStock = 280, soldStock = 1250, unitPrice = 275.00),
+                LubricantProduct(name = "GlideShift Auto Transmission Fluid", category = "Gear & Transmission", packSize = "1L Bottle", availableStock = 190, soldStock = 780, unitPrice = 420.00)
             )
             for (p in defaultProducts) {
                 crmDao.insertProduct(p)
